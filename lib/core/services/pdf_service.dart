@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import '../../shared/models/contribution_model.dart';
 import '../../shared/models/fund_model.dart';
 import '../../shared/models/society_model.dart';

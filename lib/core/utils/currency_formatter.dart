@@ -18,13 +18,16 @@ class CurrencyFormatter {
   static String formatCompactINR(num amount) {
     if (amount >= 10000000) {
       final cr = amount / 10000000;
-      return '₹${cr.toStringAsFixed(cr.truncateToDouble() == cr ? 0 : 2)} Cr';
+      final crStr = cr.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+      return '₹$crStr Cr';
     } else if (amount >= 100000) {
       final lakh = amount / 100000;
-      return '₹${lakh.toStringAsFixed(lakh.truncateToDouble() == lakh ? 0 : 2)} L';
+      final lakhStr = lakh.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+      return '₹$lakhStr L';
     } else if (amount >= 1000) {
       final k = amount / 1000;
-      return '₹${k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1)} K';
+      final kStr = k.toStringAsFixed(1).replaceAll(RegExp(r'\.?0+$'), '');
+      return '₹$kStr K';
     }
     return formatINR(amount, showDecimals: false);
   }

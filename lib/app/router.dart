@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/widgets/responsive_scaffold.dart';
@@ -15,6 +14,7 @@ import '../features/funds/presentation/funds_screen.dart';
 import '../features/members/presentation/approval_requests_screen.dart';
 import '../features/members/presentation/member_directory_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
+import '../features/reports/presentation/reports_screen.dart';
 import '../features/registration/presentation/pending_approval_screen.dart';
 import '../features/registration/presentation/registration_screen.dart';
 import '../shared/models/contribution_model.dart';

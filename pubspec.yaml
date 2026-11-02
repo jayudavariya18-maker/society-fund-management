@@ -21,7 +21,7 @@ dependencies:
   supabase_flutter: ^2.5.6
 
   # Formatting & Localization
-  intl: ^0.19.0
+  intl: ^0.20.2
 
   # Charts & Visuals
   fl_chart: ^0.68.0

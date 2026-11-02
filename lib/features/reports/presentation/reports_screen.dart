@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
@@ -40,8 +41,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fundsAsync = ref.watch(fundsListProvider);
-    final contributionsAsync = ref.watch(contributionsListProvider(null));
-    final expensesAsync = ref.watch(expensesListProvider(null));
 
     return Scaffold(
       appBar: AppBar(
