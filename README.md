@@ -14,18 +14,21 @@
 Ordinary society members can download and install the official Android release directly onto their smartphones for free:
 
 ### 📥 Direct Release APK Download:
-👉 **[Download Society Fund Management APK (v1.0.0)](../../releases/latest/download/app-release.apk)**  
-*(Alternatively, browse all releases at [GitHub Releases Page](../../releases))*
+👉 **[Download Society Fund Management APK (v1.0.0)](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)**  
+*(Alternatively, browse all releases at [GitHub Releases Page](https://github.com/jayudavariya18-maker/society-fund-management/releases))*
 
+- **Direct Download Link**: [https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)
+- **App Bundle Link (AAB for Play Store)**: [https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.aab](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.aab)
 - **Package Name**: `com.society.bajrang`
 - **Application Name**: Society Fund Management
 - **Version**: `1.0.0` (Build `1`)
 - **Compatibility**: Android 5.0 (API 21) up to Android 15+ (API 36)
 - **Supported Architectures**: Universal Fat APK (`arm64-v8a`, `armeabi-v7a`, `x86_64`)
-- **Approximate Download Size**: ~59 MB
+- **APK Download Size**: ~59.37 MB (62,254,980 bytes)
+- **AAB Download Size**: ~57.45 MB (60,242,871 bytes)
 
 ### 📲 Step-by-Step Android Installation Guide:
-1. Tap the **[Download APK](../../releases/latest/download/app-release.apk)** link above using Chrome or any mobile browser.
+1. Tap the **[Download APK](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)** link above using Chrome or any mobile browser.
 2. Once the download finishes, tap **Open** or find `app-release.apk` in your **Downloads** folder.
 3. If Android displays a prompt stating *"For your security, your phone is not allowed to install unknown apps from this source"*:
    - Tap **Settings**.
