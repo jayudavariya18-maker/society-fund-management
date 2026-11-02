@@ -1,0 +1,89 @@
+name: Android Build & Release CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-test:
+    name: Build APK, Bundle & Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up Java JDK (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🦋 Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: 🔍 Run Static Code Analysis
+        run: flutter analyze
+
+      - name: 🧪 Execute Unit and Widget Tests
+        run: flutter test
+
+      - name: 📱 Build Universal Android Release APK
+        run: flutter build apk --release
+
+      - name: 📦 Build Android App Bundle (AAB for Play Store)
+        run: flutter build appbundle --release
+
+      - name: 📤 Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: society-fund-management-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: 📤 Upload Release AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: society-fund-management-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: 🚀 Publish GitHub Release (on version tag push)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Society Fund Management App - Android Release ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          body: |
+            ## 🏢 Society Fund Management - Release ${{ github.ref_name }}
+            
+            ### 📱 Download Android APK
+            Download the standalone APK directly from the assets below:
+            - **`app-release.apk`**: Universal APK compatible with Android 5.0+ (Lollipop) through Android 15+.
+            
+            ### ✨ Included Features
+            - Multilingual UI (English, Gujarati, Hindi)
+            - General Society Fund & Dedicated Festival Fund Ledgers
+            - Immutable Double-Entry Ledger with Full Audit History
+            - Member Approval Workflow (Equal-Rights Model)
+            - Financial Statement Generation (PDF & CSV Export)
+            - Supabase PostgreSQL Backend with Row Level Security (RLS)

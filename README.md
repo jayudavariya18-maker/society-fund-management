@@ -1,17 +1,45 @@
-# 🏢 Bajrang Society Fund Management System
-### A Complete Multilingual Society Finance & Festival Management Application
+# 🏢 Society Fund Management Application (Bajrang)
+### A Multilingual Residential Society Finance & Festival Management System
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.19+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Android](https://img.shields.io/badge/Android-APK%20Release-3DDC84?logo=android&logoColor=white)](#-download-android-app)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20Auth-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Localization](https://img.shields.io/badge/Languages-EN%20%7C%20GU%20%7C%20HI-FF6B6B)](#multilingual-support)
-[![Architecture](https://img.shields.io/badge/Access%20Model-NO%20ROLES%20(Equal%20Rights)-16324F)](#user-access-philosophy--no-roles)
+[![Localization](https://img.shields.io/badge/Languages-English%20%7C%20%E0%AA%97%E0%AA%81%E0%AA%9C%E0%AA%B0%E0%AA%BE%E0%AA%A4%E0%AB%80%20%7C%20%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-FF6B6B)](#-trilingual-localization-support)
+[![Build & Release CI/CD](https://github.com/society-fund-management/actions/workflows/android-build.yml/badge.svg)](https://github.com/)
+
+---
+
+## 📱 DOWNLOAD ANDROID APP
+
+Ordinary society members can download and install the official Android release directly onto their smartphones for free:
+
+### 📥 Direct Release APK Download:
+👉 **[Download Society Fund Management APK (v1.0.0)](../../releases/latest/download/app-release.apk)**  
+*(Alternatively, browse all releases at [GitHub Releases Page](../../releases))*
+
+- **Package Name**: `com.society.bajrang`
+- **Application Name**: Society Fund Management
+- **Version**: `1.0.0` (Build `1`)
+- **Compatibility**: Android 5.0 (API 21) up to Android 15+ (API 36)
+- **Supported Architectures**: Universal Fat APK (`arm64-v8a`, `armeabi-v7a`, `x86_64`)
+- **Approximate Download Size**: ~59 MB
+
+### 📲 Step-by-Step Android Installation Guide:
+1. Tap the **[Download APK](../../releases/latest/download/app-release.apk)** link above using Chrome or any mobile browser.
+2. Once the download finishes, tap **Open** or find `app-release.apk` in your **Downloads** folder.
+3. If Android displays a prompt stating *"For your security, your phone is not allowed to install unknown apps from this source"*:
+   - Tap **Settings**.
+   - Toggle **Allow from this source** to ON.
+   - Tap the back button and tap **Install**.
+4. Tap **Open** to launch the **Society Fund Management** application.
+5. Select your preferred language (**English**, **ગુજરાતી**, or **हिन्दी**) on the top-right and sign in with your phone number.
 
 ---
 
 ## 📖 Executive Summary
-The **Bajrang Society Fund Management System** is a production-quality, multi-platform (**Android** and **Responsive Web**) financial transparency and festival administration system designed specifically for a single residential co-operative housing society.
+The **Society Fund Management Application** is a production-quality, multi-platform (**Android** and **Responsive Web**) financial transparency and festival administration system designed specifically for residential co-operative housing societies.
 
-Unlike generic multi-tenant SaaS or student demonstration apps, this application implements an **auditable, double-entry-inspired ledger** where every rupee has a traceable origin, every expenditure has an identified member actor, and all active residents possess equal governance access.
+Unlike generic multi-tenant SaaS or demo apps, this application implements an **auditable, double-entry-inspired ledger** where every rupee has a traceable origin, every expenditure has an identified member actor, and all active residents possess equal governance access.
 
 ---
 
