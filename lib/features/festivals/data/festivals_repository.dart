@@ -3,6 +3,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/festival_event_model.dart';
 import '../../../shared/models/festival_model.dart';
 import '../../authentication/data/auth_repository.dart';
+import '../../dashboard/data/dashboard_repository.dart';
 import '../../funds/data/funds_repository.dart';
 
 final festivalsRepositoryProvider = Provider<FestivalsRepository>((ref) {
@@ -20,62 +21,9 @@ class FestivalsRepository {
 
   FestivalsRepository(this._supabase, this._ref);
 
-  // In-memory mock festivals
-  static final List<FestivalModel> _mockFestivals = [
-    FestivalModel(
-      festivalId: '33333333-3333-3333-3333-333333333001',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      festivalName: 'Navratri Mahotsav 2026',
-      description: '9 Days of Dandiya Raas, Garba & Aarti celebration with resident community',
-      startDate: DateTime(2026, 10, 10),
-      endDate: DateTime(2026, 10, 19),
-      status: 'UPCOMING',
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdAt: DateTime(2026, 9, 1),
-      totalContributions: 10000.00,
-      totalExpenses: 4000.00,
-      remainingBalance: 6000.00,
-    ),
-    FestivalModel(
-      festivalId: '33333333-3333-3333-3333-333333333002',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      festivalName: 'Diwali Snehamilan 2026',
-      description: 'New Year Annakut, Deepotsav & Society Annual Community Dinner',
-      startDate: DateTime(2026, 11, 8),
-      endDate: DateTime(2026, 11, 10),
-      status: 'UPCOMING',
-      createdBy: '11111111-1111-1111-1111-111111111002',
-      createdAt: DateTime(2026, 9, 15),
-      totalContributions: 0.00,
-      totalExpenses: 0.00,
-      remainingBalance: 0.00,
-    ),
-  ];
-
-  static final List<FestivalEventModel> _mockEvents = [
-    FestivalEventModel(
-      eventId: '44444444-4444-4444-4444-444444444001',
-      festivalId: '33333333-3333-3333-3333-333333333001',
-      eventName: 'Grand Garba Night & Orchestra',
-      description: 'Live Gujarati folk band and traditional sound arrangement',
-      eventDate: DateTime(2026, 10, 15),
-      eventLocation: 'Central Society Lawn',
-      estimatedBudget: 35000.00,
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdAt: DateTime(2026, 9, 5),
-    ),
-    FestivalEventModel(
-      eventId: '44444444-4444-4444-4444-444444444002',
-      festivalId: '33333333-3333-3333-3333-333333333001',
-      eventName: 'Maha Aarti, Hawan & Mahaprasad',
-      description: 'Ashtami sacred fire and community feast',
-      eventDate: DateTime(2026, 10, 18),
-      eventLocation: 'Community Hall',
-      estimatedBudget: 25000.00,
-      createdBy: '11111111-1111-1111-1111-111111111003',
-      createdAt: DateTime(2026, 9, 6),
-    ),
-  ];
+  // Clean initial state: Zero demo festivals and events
+  static final List<FestivalModel> _mockFestivals = [];
+  static final List<FestivalEventModel> _mockEvents = [];
 
   Future<List<FestivalModel>> fetchAllFestivals() async {
     if (_supabase.isMockDevMode) {
@@ -139,6 +87,10 @@ class FestivalsRepository {
         openingBalance: openingFundBalance,
       );
 
+      _ref.invalidate(festivalsListProvider);
+      _ref.invalidate(fundsListProvider);
+      _ref.invalidate(dashboardDataProvider);
+      _supabase.notifyLocalChange('festivals');
       return newFest;
     }
 
@@ -164,6 +116,10 @@ class FestivalsRepository {
       openingBalance: openingFundBalance,
     );
 
+    _ref.invalidate(festivalsListProvider);
+    _ref.invalidate(fundsListProvider);
+    _ref.invalidate(dashboardDataProvider);
+    _supabase.notifyLocalChange('festivals');
     return festival;
   }
 
@@ -191,6 +147,8 @@ class FestivalsRepository {
         createdAt: DateTime.now(),
       );
       _mockEvents.add(newEvent);
+      _ref.invalidate(festivalsListProvider);
+      _supabase.notifyLocalChange('festival_events');
       return newEvent;
     }
 
@@ -204,6 +162,9 @@ class FestivalsRepository {
       'created_by': createdBy,
     }).select().single();
 
-    return FestivalEventModel.fromJson(res);
+    final event = FestivalEventModel.fromJson(res);
+    _ref.invalidate(festivalsListProvider);
+    _supabase.notifyLocalChange('festival_events');
+    return event;
   }
 }

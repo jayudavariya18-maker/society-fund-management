@@ -28,7 +28,6 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final color = isIncome ? AppColors.incomeGreen : AppColors.expenseRed;
     final icon = isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
 

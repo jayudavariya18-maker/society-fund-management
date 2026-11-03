@@ -9,10 +9,31 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'बजरंग सोसाइटी';
+  String get appTitle => 'RamSeva';
 
   @override
-  String get tagline => 'पारदर्शी सोसाइटी वित्त एवं उत्सव प्रबंधन';
+  String get societyName => 'रामदेवरा सोसाइटी';
+
+  @override
+  String get tagline =>
+      'राम के आशीर्वाद, हनुमानजी की शक्ति, रामदेवरा की प्रगति।';
+
+  @override
+  String get dashboardTagline =>
+      'राम के आशीर्वाद, हनुमानजी की शक्ति, रामदेवरा की प्रगति।';
+
+  @override
+  String get noContributionsYet => 'अभी तक कोई योगदान दर्ज नहीं किया गया है।';
+
+  @override
+  String get noExpensesYet => 'अभी तक कोई खर्च दर्ज नहीं किया गया है।';
+
+  @override
+  String get noFestivalsYet => 'अभी तक कोई त्योहार नहीं जोड़ा गया है।';
+
+  @override
+  String get financialJourneyStarts =>
+      'आपकी सोसाइटी की वित्तीय यात्रा यहाँ से शुरू होती है।';
 
   @override
   String get home => 'होम';

@@ -127,14 +127,14 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('About Society Deployment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        const Text('About RamSeva & Society Deployment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                         const SizedBox(height: 8),
                         const Text(
-                          'Bajrang Heights Co-Operative Housing Society is configured as an autonomous single-society deployment. Every verified flat owner possesses identical permissions to record, inspect, audit, and approve society affairs.',
+                          'Ramdevra Society is configured as an autonomous single-society deployment powered by RamSeva. "Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati." Every verified resident possesses identical permissions to record, inspect, audit, and approve society affairs with complete transparency.',
                           style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
                         ),
                         const SizedBox(height: 12),
-                        const Text('Registered Society ID: 00000000-0000-0000-0000-000000000001', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                        const Text('Application: RamSeva • Registered Society ID: 00000000-0000-0000-0000-000000000001', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
                       ],
                     ),
                   ),

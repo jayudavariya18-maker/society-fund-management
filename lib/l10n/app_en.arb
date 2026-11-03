@@ -1,10 +1,16 @@
 {
   "@@locale": "en",
-  "appTitle": "Bajrang Society",
+  "appTitle": "RamSeva",
   "@appTitle": {
     "description": "Application Title"
   },
-  "tagline": "Transparent Society Finance & Festival Management",
+  "societyName": "Ramdevra Society",
+  "tagline": "Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.",
+  "dashboardTagline": "Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.",
+  "noContributionsYet": "No contributions recorded yet.",
+  "noExpensesYet": "No expenses recorded yet.",
+  "noFestivalsYet": "No festivals added yet.",
+  "financialJourneyStarts": "Your society's financial journey starts here.",
   "home": "Home",
   "funds": "Funds",
   "festivals": "Festivals",

@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
-        android:label="Society Fund Management"
+        android:label="RamSeva"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

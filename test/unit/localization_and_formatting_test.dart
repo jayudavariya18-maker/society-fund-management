@@ -16,17 +16,21 @@ void main() {
       final formattedBalance = CurrencyFormatter.formatINR(testBalance);
 
       // Verify English interface strings
-      expect(locEn.appTitle, equals('Bajrang Society'));
+      expect(locEn.appTitle, equals('RamSeva'));
+      expect(locEn.societyName, equals('Ramdevra Society'));
+      expect(locEn.dashboardTagline, equals('Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.'));
       expect(locEn.generalFund, equals('General Society Fund'));
       expect(locEn.addContribution, equals('Add Contribution'));
 
       // Verify Gujarati interface strings
-      expect(locGu.appTitle, equals('બજરંગ સોસાયટી'));
+      expect(locGu.appTitle, equals('RamSeva'));
+      expect(locGu.societyName, equals('રામદેવરા સોસાયટી'));
       expect(locGu.generalFund, equals('સામાન્ય સોસાયટી ફંડ'));
       expect(locGu.addContribution, equals('આવક / ફાળો ઉમેરો'));
 
       // Verify Hindi interface strings
-      expect(locHi.appTitle, equals('बजरंग सोसाइटी'));
+      expect(locHi.appTitle, equals('RamSeva'));
+      expect(locHi.societyName, equals('रामदेवरा सोसाइटी'));
       expect(locHi.generalFund, equals('सामान्य सोसाइटी फंड'));
       expect(locHi.addContribution, equals('योगदान / शुल्क जोड़ें'));
 

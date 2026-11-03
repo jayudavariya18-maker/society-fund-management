@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/localization/app_localizations.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
-import '../../../shared/models/member_model.dart';
 import '../data/members_repository.dart';
 
 class MemberDirectoryScreen extends ConsumerStatefulWidget {

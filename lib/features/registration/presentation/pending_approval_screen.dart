@@ -55,18 +55,40 @@ class _PendingApprovalScreenState extends ConsumerState<PendingApprovalScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: AppColors.gold.withValues(alpha: 0.35), width: 1),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(28.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // RamSeva Logo
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.gold, width: 1.8),
+                      ),
+                      child: ClipOval(
+                        child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.societyName,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.goldDark),
+                    ),
+                    const SizedBox(height: 16),
                     CircleAvatar(
-                      radius: 36,
-                      backgroundColor: isRejected ? AppColors.expenseRed.withOpacity(0.12) : AppColors.warningAmber.withOpacity(0.12),
+                      radius: 30,
+                      backgroundColor: isRejected ? AppColors.expenseRed.withValues(alpha: 0.12) : AppColors.warningAmber.withValues(alpha: 0.12),
                       child: Icon(
                         isRejected ? Icons.cancel_outlined : Icons.hourglass_top_rounded,
-                        size: 36,
+                        size: 30,
                         color: isRejected ? AppColors.expenseRed : AppColors.warningAmber,
                       ),
                     ),

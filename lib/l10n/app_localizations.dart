@@ -103,14 +103,50 @@ abstract class AppLocalizations {
   /// Application Title
   ///
   /// In en, this message translates to:
-  /// **'Bajrang Society'**
+  /// **'RamSeva'**
   String get appTitle;
+
+  /// No description provided for @societyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramdevra Society'**
+  String get societyName;
 
   /// No description provided for @tagline.
   ///
   /// In en, this message translates to:
-  /// **'Transparent Society Finance & Festival Management'**
+  /// **'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.'**
   String get tagline;
+
+  /// No description provided for @dashboardTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.'**
+  String get dashboardTagline;
+
+  /// No description provided for @noContributionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No contributions recorded yet.'**
+  String get noContributionsYet;
+
+  /// No description provided for @noExpensesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses recorded yet.'**
+  String get noExpensesYet;
+
+  /// No description provided for @noFestivalsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No festivals added yet.'**
+  String get noFestivalsYet;
+
+  /// No description provided for @financialJourneyStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your society\'s financial journey starts here.'**
+  String get financialJourneyStarts;
 
   /// No description provided for @home.
   ///

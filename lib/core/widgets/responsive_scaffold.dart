@@ -39,16 +39,22 @@ class ResponsiveScaffold extends ConsumerWidget {
                 children: [
                   // Header Logo & Society Name
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     decoration: const BoxDecoration(
                       border: Border(bottom: BorderSide(color: AppColors.divider)),
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: AppColors.primary,
-                          radius: 18,
-                          child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 20),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.gold, width: 1.5),
+                          ),
+                          child: ClipOval(
+                            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -62,11 +68,18 @@ class ResponsiveScaffold extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                member?.flatNumber != null ? '${member!.flatNumber} • ${member.fullName}' : 'Resident Member',
-                                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                l10n.societyName,
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.goldDark),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              if (member != null)
+                                Text(
+                                  '${member.flatNumber} • ${member.fullName}',
+                                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                             ],
                           ),
                         ),
@@ -146,23 +159,36 @@ class ResponsiveScaffold extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primary),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0F1E36), Color(0xFF1E3A5F)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.apartment_rounded, color: AppColors.primary),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.gold, width: 1.8),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
                     member?.fullName ?? l10n.appTitle,
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
-                    member?.flatNumber ?? l10n.tagline,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    member != null ? '${member.flatNumber} • ${l10n.societyName}' : l10n.societyName,
+                    style: const TextStyle(color: AppColors.goldLight, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),

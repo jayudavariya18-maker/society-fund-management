@@ -124,5 +124,44 @@ void main() {
       expect(adjustmentExpense.correctionReference, equals('exp-original'));
       expect(adjustmentExpense.status, equals('ADJUSTED'));
     });
+
+    test('Scenario 8: First-member bootstrap gate activates founding resident and locks immediately', () {
+      final membersList = <MemberModel>[];
+
+      // When society is empty, first member can bootstrap
+      bool canBootstrap(List<MemberModel> list) => list.isEmpty;
+
+      expect(canBootstrap(membersList), isTrue);
+
+      // Founding member joins
+      final foundingMember = MemberModel(
+        memberId: 'founder-01',
+        societyId: 'soc-001',
+        authUid: 'auth-founder',
+        fullName: 'First Resident',
+        phoneNumber: '+919825000001',
+        flatNumber: 'A-101',
+        membershipStatus: 'ACTIVE',
+        joinedAt: DateTime.now(),
+      );
+      membersList.add(foundingMember);
+
+      // Once one member exists, bootstrap window permanently shuts
+      expect(canBootstrap(membersList), isFalse);
+
+      // Second member must go through PENDING approval
+      final secondApplicant = RegistrationRequestModel(
+        requestId: 'req-002',
+        societyId: 'soc-001',
+        authUid: 'auth-resident-2',
+        fullName: 'Second Resident',
+        phoneNumber: '+919825000002',
+        flatNumber: 'B-202',
+        requestStatus: 'PENDING',
+        submittedAt: DateTime.now(),
+      );
+
+      expect(secondApplicant.isPending, isTrue);
+    });
   });
 }

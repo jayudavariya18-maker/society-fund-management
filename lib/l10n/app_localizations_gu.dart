@@ -9,10 +9,30 @@ class AppLocalizationsGu extends AppLocalizations {
   AppLocalizationsGu([String locale = 'gu']) : super(locale);
 
   @override
-  String get appTitle => 'બજરંગ સોસાયટી';
+  String get appTitle => 'RamSeva';
 
   @override
-  String get tagline => 'પારદર્શક સોસાયટી નાણાં અને ઉત્સવ વ્યવસ્થાપન';
+  String get societyName => 'રામદેવરા સોસાયટી';
+
+  @override
+  String get tagline => 'રામના આશીર્વાદ, હનુમાનજીની શક્તિ, રામદેવરાની પ્રગતિ.';
+
+  @override
+  String get dashboardTagline =>
+      'રામના આશીર્વાદ, હનુમાનજીની શક્તિ, રામદેવરાની પ્રગતિ.';
+
+  @override
+  String get noContributionsYet => 'હજી સુધી કોઈ ફાળો નોંધાયેલ નથી.';
+
+  @override
+  String get noExpensesYet => 'હજી સુધી કોઈ ખર્ચ નોંધાયેલ નથી.';
+
+  @override
+  String get noFestivalsYet => 'હજી સુધી કોઈ ઉત્સવ ઉમેરાયેલ નથી.';
+
+  @override
+  String get financialJourneyStarts =>
+      'તમારી સોસાયટીની નાણાકીય સફર અહીંથી શરૂ થાય છે.';
 
   @override
   String get home => 'મુખ્ય પૃષ્ઠ';

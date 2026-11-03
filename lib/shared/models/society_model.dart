@@ -24,13 +24,13 @@ class SocietyModel {
   factory SocietyModel.fromJson(Map<String, dynamic> json) {
     return SocietyModel(
       societyId: json['society_id'] as String,
-      societyName: json['society_name'] as String? ?? 'Bajrang Society',
-      address: json['address'] as String? ?? '',
-      city: json['city'] as String? ?? '',
-      state: json['state'] as String? ?? '',
-      pincode: json['pincode'] as String? ?? '',
+      societyName: json['society_name'] as String? ?? 'Ramdevra Society',
+      address: json['address'] as String? ?? 'Ramdevra Society, Main Road',
+      city: json['city'] as String? ?? 'Ahmedabad',
+      state: json['state'] as String? ?? 'Gujarat',
+      pincode: json['pincode'] as String? ?? '380015',
       contactNumber: json['contact_number'] as String? ?? '',
-      email: json['email'] as String?,
+      email: json['email'] as String? ?? 'ramdevra.society@gmail.com',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'].toString())
           : DateTime.now(),

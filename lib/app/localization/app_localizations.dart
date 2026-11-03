@@ -27,8 +27,14 @@ class AppLocalizations {
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'appTitle': 'Bajrang Society',
-      'tagline': 'Transparent Society Finance & Festival Management',
+      'appTitle': 'RamSeva',
+      'societyName': 'Ramdevra Society',
+      'tagline': 'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.',
+      'dashboardTagline': 'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.',
+      'noContributionsYet': 'No contributions recorded yet.',
+      'noExpensesYet': 'No expenses recorded yet.',
+      'noFestivalsYet': 'No festivals added yet.',
+      'financialJourneyStarts': "Your society's financial journey starts here.",
       'home': 'Home',
       'funds': 'Funds',
       'festivals': 'Festivals',
@@ -160,8 +166,14 @@ class AppLocalizations {
       'errorOccurred': 'An error occurred while communicating with the database',
     },
     'gu': {
-      'appTitle': 'બજરંગ સોસાયટી',
-      'tagline': 'પારદર્શક સોસાયટી નાણાં અને ઉત્સવ વ્યવસ્થાપન',
+      'appTitle': 'RamSeva',
+      'societyName': 'રામદેવરા સોસાયટી',
+      'tagline': 'રામના આશીર્વાદ, હનુમાનજીની શક્તિ, રામદેવરાની પ્રગતિ.',
+      'dashboardTagline': 'રામના આશીર્વાદ, હનુમાનજીની શક્તિ, રામદેવરાની પ્રગતિ.',
+      'noContributionsYet': 'હજી સુધી કોઈ ફાળો નોંધાયેલ નથી.',
+      'noExpensesYet': 'હજી સુધી કોઈ ખર્ચ નોંધાયેલ નથી.',
+      'noFestivalsYet': 'હજી સુધી કોઈ ઉત્સવ ઉમેરાયેલ નથી.',
+      'financialJourneyStarts': 'તમારી સોસાયટીની નાણાકીય સફર અહીંથી શરૂ થાય છે.',
       'home': 'મુખ્ય પૃષ્ઠ',
       'funds': 'ફંડ્સ',
       'festivals': 'ઉત્સવો',
@@ -293,8 +305,14 @@ class AppLocalizations {
       'errorOccurred': 'ડેટાબેઝ સાથે સંપર્ક કરવામાં ભૂલ આવી',
     },
     'hi': {
-      'appTitle': 'बजरंग सोसाइटी',
-      'tagline': 'पारदर्शी सोसाइटी वित्त एवं उत्सव प्रबंधन',
+      'appTitle': 'RamSeva',
+      'societyName': 'रामदेवरा सोसाइटी',
+      'tagline': 'राम के आशीर्वाद, हनुमानजी की शक्ति, रामदेवरा की प्रगति।',
+      'dashboardTagline': 'राम के आशीर्वाद, हनुमानजी की शक्ति, रामदेवरा की प्रगति।',
+      'noContributionsYet': 'अभी तक कोई योगदान दर्ज नहीं किया गया है।',
+      'noExpensesYet': 'अभी तक कोई खर्च दर्ज नहीं किया गया है।',
+      'noFestivalsYet': 'अभी तक कोई त्योहार नहीं जोड़ा गया है।',
+      'financialJourneyStarts': 'आपकी सोसाइटी की वित्तीय यात्रा यहाँ से शुरू होती है।',
       'home': 'होम',
       'funds': 'फंड्स',
       'festivals': 'त्योहार',
@@ -436,7 +454,13 @@ class AppLocalizations {
 
   // Getters for all keys
   String get appTitle => _t('appTitle');
+  String get societyName => _t('societyName');
   String get tagline => _t('tagline');
+  String get dashboardTagline => _t('dashboardTagline');
+  String get noContributionsYet => _t('noContributionsYet');
+  String get noExpensesYet => _t('noExpensesYet');
+  String get noFestivalsYet => _t('noFestivalsYet');
+  String get financialJourneyStarts => _t('financialJourneyStarts');
   String get home => _t('home');
   String get funds => _t('funds');
   String get festivals => _t('festivals');

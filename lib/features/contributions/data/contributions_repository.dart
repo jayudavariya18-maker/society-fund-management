@@ -3,6 +3,7 @@ import '../../../core/services/receipt_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/contribution_model.dart';
 import '../../authentication/data/auth_repository.dart';
+import '../../dashboard/data/dashboard_repository.dart';
 import '../../funds/data/funds_repository.dart';
 
 final contributionsRepositoryProvider = Provider<ContributionsRepository>((ref) {
@@ -20,85 +21,8 @@ class ContributionsRepository {
 
   ContributionsRepository(this._supabase, this._ref);
 
-  // In-memory mock contributions
-  static final List<ContributionModel> _mockContributions = [
-    ContributionModel(
-      contributionId: '55555555-5555-5555-5555-555555555001',
-      fundId: '22222222-2222-2222-2222-222222222001',
-      fundName: 'General Society Maintenance Fund',
-      memberId: '11111111-1111-1111-1111-111111111001',
-      memberName: 'Rajeshbhai Patel',
-      flatNumber: 'A-402',
-      amount: 3000.00,
-      contributionType: 'MONTHLY_MAINTENANCE',
-      paymentMethod: 'UPI',
-      transactionReference: 'UPI/261001/498213',
-      paymentDate: DateTime(2026, 10, 1),
-      notes: 'October 2026 monthly maintenance for Flat A-402',
-      receiptNumber: 'REC-202610-0001',
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdByName: 'Rajeshbhai Patel',
-      createdAt: DateTime(2026, 10, 1, 11, 15),
-      status: 'POSTED',
-    ),
-    ContributionModel(
-      contributionId: '55555555-5555-5555-5555-555555555002',
-      fundId: '22222222-2222-2222-2222-222222222001',
-      fundName: 'General Society Maintenance Fund',
-      memberId: '11111111-1111-1111-1111-111111111002',
-      memberName: 'Amitkumar Shah',
-      flatNumber: 'B-201',
-      amount: 3000.00,
-      contributionType: 'MONTHLY_MAINTENANCE',
-      paymentMethod: 'BANK_TRANSFER',
-      transactionReference: 'NEFT/AXIS/998124',
-      paymentDate: DateTime(2026, 10, 2),
-      notes: 'October 2026 monthly maintenance for Flat B-201',
-      receiptNumber: 'REC-202610-0002',
-      createdBy: '11111111-1111-1111-1111-111111111002',
-      createdByName: 'Amitkumar Shah',
-      createdAt: DateTime(2026, 10, 2, 14, 30),
-      status: 'POSTED',
-    ),
-    ContributionModel(
-      contributionId: '55555555-5555-5555-5555-555555555003',
-      fundId: '22222222-2222-2222-2222-222222222002',
-      fundName: 'Navratri Mahotsav 2026 Fund',
-      memberId: '11111111-1111-1111-1111-111111111001',
-      memberName: 'Rajeshbhai Patel',
-      flatNumber: 'A-402',
-      amount: 5000.00,
-      contributionType: 'FESTIVAL_CONTRIBUTION',
-      paymentMethod: 'UPI',
-      transactionReference: 'UPI/261005/778120',
-      paymentDate: DateTime(2026, 10, 5),
-      notes: 'Navratri voluntary contribution from Flat A-402',
-      receiptNumber: 'REC-202610-0003',
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdByName: 'Rajeshbhai Patel',
-      createdAt: DateTime(2026, 10, 5, 10, 00),
-      status: 'POSTED',
-    ),
-    ContributionModel(
-      contributionId: '55555555-5555-5555-5555-555555555004',
-      fundId: '22222222-2222-2222-2222-222222222002',
-      fundName: 'Navratri Mahotsav 2026 Fund',
-      memberId: '11111111-1111-1111-1111-111111111003',
-      memberName: 'Meenaben Trivedi',
-      flatNumber: 'C-104',
-      amount: 5000.00,
-      contributionType: 'FESTIVAL_CONTRIBUTION',
-      paymentMethod: 'CASH',
-      transactionReference: 'CASH-REC-01',
-      paymentDate: DateTime(2026, 10, 6),
-      notes: 'Navratri voluntary contribution from Flat C-104',
-      receiptNumber: 'REC-202610-0004',
-      createdBy: '11111111-1111-1111-1111-111111111003',
-      createdByName: 'Meenaben Trivedi',
-      createdAt: DateTime(2026, 10, 6, 17, 45),
-      status: 'POSTED',
-    ),
-  ];
+  // In-memory mock contributions (Initial: Clean Zero State)
+  static final List<ContributionModel> _mockContributions = [];
 
   Future<List<ContributionModel>> fetchContributions({
     String? fundId,
@@ -178,6 +102,10 @@ class ContributionsRepository {
 
       _mockContributions.insert(0, newModel);
       FundsRepository.recordMockContribution(fundId, amount);
+      _ref.invalidate(contributionsListProvider(null));
+      _ref.invalidate(fundsListProvider);
+      _ref.invalidate(dashboardDataProvider);
+      _supabase.notifyLocalChange('contributions');
       return newModel;
     }
 
@@ -196,6 +124,11 @@ class ContributionsRepository {
       'status': 'POSTED',
     }).select('*, funds(fund_name), members(full_name, flat_number)').single();
 
-    return ContributionModel.fromJson(res);
+    final model = ContributionModel.fromJson(res);
+    _ref.invalidate(contributionsListProvider(null));
+    _ref.invalidate(fundsListProvider);
+    _ref.invalidate(dashboardDataProvider);
+    _supabase.notifyLocalChange('contributions');
+    return model;
   }
 }

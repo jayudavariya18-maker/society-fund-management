@@ -10,10 +10,16 @@ class SupabaseService {
   bool _isInitialized = false;
   bool _isMockDevMode = false;
 
+  RealtimeChannel? _realtimeChannel;
+  final StreamController<String> _realtimeEventsController =
+      StreamController<String>.broadcast();
+
   SupabaseService._();
 
   bool get isInitialized => _isInitialized;
   bool get isMockDevMode => _isMockDevMode;
+  Stream<String> get realtimeEvents => _realtimeEventsController.stream;
+
   SupabaseClient get client {
     if (_client == null) {
       throw StateError('SupabaseService not initialized. Call initialize() first.');
@@ -28,7 +34,7 @@ class SupabaseService {
   }) async {
     if (supabaseUrl.contains('your-project') || supabaseAnonKey.contains('your-anon-key')) {
       if (enableMockFallback) {
-        debugPrint('[SupabaseService] Placeholder credentials detected. Running in Development Mock Mode.');
+        debugPrint('[SupabaseService] Placeholder credentials detected. Running in Clean Initial Mode.');
         _isMockDevMode = true;
         _isInitialized = true;
         return;
@@ -44,8 +50,9 @@ class SupabaseService {
       _isInitialized = true;
       _isMockDevMode = false;
       debugPrint('[SupabaseService] Successfully connected to live Supabase project.');
+      _setupRealtimeSubscriptions();
     } catch (e) {
-      debugPrint('[SupabaseService] Connection error: $e. Fallback to Dev Mock Mode: $enableMockFallback');
+      debugPrint('[SupabaseService] Connection error: $e. Fallback to Dev Clean Mode: $enableMockFallback');
       if (enableMockFallback) {
         _isMockDevMode = true;
         _isInitialized = true;
@@ -55,13 +62,83 @@ class SupabaseService {
     }
   }
 
+  void _setupRealtimeSubscriptions() {
+    if (_client == null || _isMockDevMode) return;
+    try {
+      _realtimeChannel = _client!.channel('public:ramseva_central_ledger')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'contributions',
+          callback: (payload) => _realtimeEventsController.add('contributions'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'expenses',
+          callback: (payload) => _realtimeEventsController.add('expenses'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'funds',
+          callback: (payload) => _realtimeEventsController.add('funds'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'festivals',
+          callback: (payload) => _realtimeEventsController.add('festivals'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'festival_events',
+          callback: (payload) => _realtimeEventsController.add('festival_events'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'members',
+          callback: (payload) => _realtimeEventsController.add('members'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'registration_requests',
+          callback: (payload) => _realtimeEventsController.add('registration_requests'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'registration_approvals',
+          callback: (payload) => _realtimeEventsController.add('registration_approvals'),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'announcements',
+          callback: (payload) => _realtimeEventsController.add('announcements'),
+        );
+
+      _realtimeChannel!.subscribe((status, [error]) {
+        debugPrint('[SupabaseRealtime] Subscription status: $status (error: $error)');
+      });
+    } catch (e) {
+      debugPrint('[SupabaseRealtime] Setup error: $e');
+    }
+  }
+
+  /// Manually trigger a local state refresh event across the app
+  void notifyLocalChange(String table) {
+    _realtimeEventsController.add(table);
+  }
+
   String? get currentAuthUid {
-    if (_isMockDevMode) return 'aaaaaaa1-0000-0000-0000-000000000001';
     return _client?.auth.currentUser?.id;
   }
 
   String? get currentUserPhone {
-    if (_isMockDevMode) return '+919825000001';
     return _client?.auth.currentUser?.phone;
   }
 }

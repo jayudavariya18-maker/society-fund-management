@@ -5,7 +5,6 @@ import '../../../app/localization/app_localizations.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/empty_state_view.dart';
-import '../../../shared/models/audit_log_model.dart';
 import '../data/audit_repository.dart';
 
 class AuditLogsScreen extends ConsumerWidget {

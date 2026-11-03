@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../shared/models/member_model.dart';
 import '../../../shared/models/registration_request_model.dart';
 import '../../authentication/data/auth_repository.dart';
+import '../../dashboard/data/dashboard_repository.dart';
+import '../../members/data/members_repository.dart';
 
 final registrationRepositoryProvider = Provider<RegistrationRepository>((ref) {
   return RegistrationRepository(SupabaseService.instance, ref);
@@ -18,20 +21,10 @@ class RegistrationRepository {
 
   RegistrationRepository(this._supabase, this._ref);
 
-  // In-memory mock list for testing/dev fallback
-  static final List<RegistrationRequestModel> _mockRequests = [
-    RegistrationRequestModel(
-      requestId: '88888888-8888-8888-8888-888888888001',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      authUid: 'aaaaaaa4-0000-0000-0000-000000000004',
-      fullName: 'Bhavikbhai Joshi',
-      phoneNumber: '+919825000004',
-      flatNumber: 'B-503',
-      additionalInformation: 'Moved in on October 1st as new flat owner.',
-      requestStatus: 'PENDING',
-      submittedAt: DateTime.now().subtract(const Duration(hours: 18)),
-    ),
-  ];
+  // Clean initial state: Zero demo registration requests
+  static final List<RegistrationRequestModel> _mockRequests = [];
+
+  static List<RegistrationRequestModel> get mockRequests => _mockRequests;
 
   /// Submit new resident registration request
   Future<RegistrationRequestModel> submitRequest({
@@ -55,6 +48,8 @@ class RegistrationRepository {
         submittedAt: DateTime.now(),
       );
       _mockRequests.add(newReq);
+      _ref.invalidate(pendingRegistrationsProvider);
+      _supabase.notifyLocalChange('registration_requests');
       return newReq;
     }
 
@@ -68,7 +63,10 @@ class RegistrationRepository {
       'request_status': 'PENDING',
     }).select().single();
 
-    return RegistrationRequestModel.fromJson(res);
+    final model = RegistrationRequestModel.fromJson(res);
+    _ref.invalidate(pendingRegistrationsProvider);
+    _supabase.notifyLocalChange('registration_requests');
+    return model;
   }
 
   /// Fetch all PENDING registration requests for active members to review
@@ -121,6 +119,25 @@ class RegistrationRepository {
           reviewedAt: DateTime.now(),
           rejectionReason: decision == 'REJECTED' ? comments : null,
         );
+
+        if (decision == 'APPROVED') {
+          MembersRepository.addMockMember(
+            MemberModel(
+              memberId: 'mem-${DateTime.now().millisecondsSinceEpoch}',
+              societyId: req.societyId,
+              authUid: req.authUid,
+              fullName: req.fullName,
+              phoneNumber: req.phoneNumber,
+              flatNumber: req.flatNumber,
+              membershipStatus: 'ACTIVE',
+              joinedAt: DateTime.now(),
+            ),
+          );
+        }
+        _ref.invalidate(pendingRegistrationsProvider);
+        _ref.invalidate(membersListProvider);
+        _ref.invalidate(dashboardDataProvider);
+        _supabase.notifyLocalChange('registration_requests');
       }
       return;
     }
@@ -135,5 +152,9 @@ class RegistrationRepository {
       'comments': comments,
       'decided_at': DateTime.now().toIso8601String(),
     });
+    _ref.invalidate(pendingRegistrationsProvider);
+    _ref.invalidate(membersListProvider);
+    _ref.invalidate(dashboardDataProvider);
+    _supabase.notifyLocalChange('registration_approvals');
   }
 }

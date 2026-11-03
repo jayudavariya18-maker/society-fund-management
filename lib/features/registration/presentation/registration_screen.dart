@@ -20,7 +20,15 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   final _flatController = TextEditingController();
   final _infoController = TextEditingController();
   bool _isLoading = false;
+  bool _isCheckingBootstrap = true;
+  bool _isFirstMember = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstMemberBootstrap();
+  }
 
   @override
   void dispose() {
@@ -30,21 +38,60 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     super.dispose();
   }
 
+  Future<void> _checkFirstMemberBootstrap() async {
+    try {
+      final hasActive = await ref.read(authRepositoryProvider).hasActiveMembers();
+      if (mounted) {
+        setState(() {
+          _isFirstMember = !hasActive;
+          _isCheckingBootstrap = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isCheckingBootstrap = false;
+        });
+      }
+    }
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
-      await ref.read(registrationRepositoryProvider).submitRequest(
-        fullName: _nameController.text.trim(),
-        flatNumber: _flatController.text.trim(),
-        additionalInfo: _infoController.text.trim().isNotEmpty ? _infoController.text.trim() : null,
-      );
-      await ref.read(authStateProvider.notifier).refreshStatus();
-      if (mounted) context.go('/pending-approval');
+      if (_isFirstMember) {
+        // Secure Bootstrap of the very first society member
+        await ref.read(authStateProvider.notifier).completeFirstMemberBootstrap(
+          fullName: _nameController.text.trim(),
+          flatNumber: _flatController.text.trim(),
+          email: _infoController.text.trim().isNotEmpty ? _infoController.text.trim() : null,
+        );
+        if (mounted) context.go('/');
+      } else {
+        // Normal Registration Request requiring approval from any active member
+        await ref.read(registrationRepositoryProvider).submitRequest(
+          fullName: _nameController.text.trim(),
+          flatNumber: _flatController.text.trim(),
+          additionalInfo: _infoController.text.trim().isNotEmpty ? _infoController.text.trim() : null,
+        );
+        await ref.read(authStateProvider.notifier).refreshStatus();
+        if (mounted) context.go('/pending-approval');
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); });
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '').replaceFirst('AuthException: ', '');
+      });
     } finally {
-      setState(() { _isLoading = false; });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -55,9 +102,10 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.registrationTitle),
+        title: Text(l10n.registrationTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
+            tooltip: l10n.logout,
             icon: const Icon(Icons.logout),
             onPressed: () {
               ref.read(authStateProvider.notifier).signOut();
@@ -72,7 +120,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: AppColors.gold.withValues(alpha: 0.35), width: 1),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(28.0),
                 child: Form(
@@ -80,35 +132,90 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // RamSeva Logo
                       Center(
-                        child: CircleAvatar(
-                          radius: 32,
-                          backgroundColor: AppColors.secondary.withOpacity(0.12),
-                          child: const Icon(Icons.person_add_rounded, size: 32, color: AppColors.secondary),
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.gold, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.gold.withValues(alpha: 0.25),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Text(
-                        l10n.registrationTitle,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        l10n.appTitle,
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 6),
                       Text(
-                        l10n.registrationSubtitle,
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        l10n.societyName,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.goldDark),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 14),
+
+                      // First Member Bootstrap Banner or Normal Banner
+                      if (!_isCheckingBootstrap && _isFirstMember) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.stars_rounded, color: AppColors.goldDark, size: 24),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Founding Resident Setup',
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.goldDark),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'You are activating the first member account for Ramdevra Society. Your account will be activated immediately to initialize society records.',
+                                      style: TextStyle(fontSize: 11, color: AppColors.textPrimary, height: 1.3),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ] else ...[
+                        Text(
+                          l10n.registrationSubtitle,
+                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       if (_error != null) ...[
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.expenseRed.withOpacity(0.08),
+                            color: AppColors.expenseRed.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.expenseRed.withValues(alpha: 0.3)),
                           ),
-                          child: Text(_error!, style: const TextStyle(color: AppColors.expenseRed, fontSize: 12)),
+                          child: Text(_error!, style: const TextStyle(color: AppColors.expenseRed, fontSize: 12), textAlign: TextAlign.center),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -119,7 +226,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         readOnly: true,
                         decoration: InputDecoration(
                           labelText: l10n.phoneNumber,
-                          prefixIcon: const Icon(Icons.phone_android, size: 20),
+                          prefixIcon: const Icon(Icons.phone_android, size: 20, color: AppColors.primary),
                           suffixIcon: const Icon(Icons.verified, color: AppColors.incomeGreen, size: 20),
                         ),
                       ),
@@ -131,7 +238,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         decoration: InputDecoration(
                           labelText: l10n.fullName,
                           prefixIcon: const Icon(Icons.person_outline, size: 20),
-                          hintText: 'e.g. Bhavikbhai Joshi',
+                          hintText: 'Enter your genuine full name',
                         ),
                         validator: (v) => Validators.requiredField(v, l10n.validationRequired),
                       ),
@@ -143,29 +250,33 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         decoration: InputDecoration(
                           labelText: l10n.flatNumber,
                           prefixIcon: const Icon(Icons.meeting_room_outlined, size: 20),
-                          hintText: 'e.g. B-503',
+                          hintText: 'e.g. A-101, B-202',
                         ),
                         validator: (v) => Validators.requiredField(v, l10n.validationRequired),
                       ),
                       const SizedBox(height: 16),
 
-                      // Additional Info
+                      // Additional Info or Email
                       TextFormField(
                         controller: _infoController,
-                        maxLines: 3,
+                        maxLines: 2,
                         decoration: InputDecoration(
-                          labelText: l10n.additionalInfo,
+                          labelText: _isFirstMember ? 'Email Address (Optional)' : l10n.additionalInfo,
                           alignLabelWithHint: true,
-                          hintText: 'Ownership details, possession date, or landlord name',
+                          hintText: _isFirstMember ? 'e.g. resident@gmail.com' : 'Ownership details or possession date',
                         ),
                       ),
                       const SizedBox(height: 24),
 
                       ElevatedButton(
                         onPressed: _isLoading ? null : _handleSubmit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                         child: _isLoading
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : Text(l10n.submitRequest),
+                            : Text(_isFirstMember ? 'Activate First Member & Open Dashboard' : l10n.submitRequest),
                       ),
                     ],
                   ),

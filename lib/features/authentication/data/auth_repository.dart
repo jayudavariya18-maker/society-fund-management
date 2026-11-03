@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/member_model.dart';
 import '../../../shared/models/registration_request_model.dart';
+import '../../members/data/members_repository.dart';
+import '../../registration/data/registration_repository.dart';
 
 enum AuthStatus {
   unauthenticated,
@@ -61,44 +63,114 @@ class AuthRepository {
 
   AuthRepository(this._supabaseService);
 
-  // In-memory mock store for dev fallback
+  // In-memory store for fallback (Zero hardcoded members)
   static String? _devMockPhone;
   static bool _devMockOtpSent = false;
-  static MemberModel _mockActiveMember = MemberModel(
-    memberId: '11111111-1111-1111-1111-111111111001',
-    societyId: '00000000-0000-0000-0000-000000000001',
-    authUid: 'aaaaaaa1-0000-0000-0000-000000000001',
-    fullName: 'Rajeshbhai Patel',
-    phoneNumber: '+919825000001',
-    flatNumber: 'A-402',
-    email: 'rajesh.patel@gmail.com',
-    membershipStatus: 'ACTIVE',
-    joinedAt: DateTime(2025, 1, 1),
-  );
+
+  /// Check whether any active members already exist in the society
+  Future<bool> hasActiveMembers() async {
+    if (_supabaseService.isMockDevMode) {
+      return MembersRepository.mockMembers.isNotEmpty;
+    }
+    try {
+      final res = await _supabaseService.client
+          .from('members')
+          .select('member_id')
+          .eq('membership_status', 'ACTIVE')
+          .limit(1);
+      return (res as List).isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Bootstrap the founding first member of Ramdevra Society
+  Future<MemberModel> bootstrapFirstMember({
+    required String fullName,
+    required String flatNumber,
+    String? email,
+  }) async {
+    final phone = _devMockPhone ?? _supabaseService.currentUserPhone ?? '+919876543210';
+    final authUid = _supabaseService.currentAuthUid ?? 'bootstrap-${DateTime.now().millisecondsSinceEpoch}';
+
+    if (_supabaseService.isMockDevMode) {
+      final member = MemberModel(
+        memberId: 'mem-${DateTime.now().millisecondsSinceEpoch}',
+        societyId: '00000000-0000-0000-0000-000000000001',
+        authUid: authUid,
+        fullName: fullName,
+        phoneNumber: phone,
+        flatNumber: flatNumber,
+        email: email,
+        membershipStatus: 'ACTIVE',
+        joinedAt: DateTime.now(),
+      );
+      MembersRepository.addMockMember(member);
+      return member;
+    }
+
+    try {
+      final res = await _supabaseService.client.rpc('bootstrap_first_society_member', params: {
+        'p_full_name': fullName,
+        'p_flat_number': flatNumber,
+        'p_email': email,
+      });
+      return MemberModel.fromJson(res as Map<String, dynamic>);
+    } on PostgrestException {
+      // Direct insertion fallback if stored function isn't applied yet
+      final memberRes = await _supabaseService.client.from('members').insert({
+        'society_id': '00000000-0000-0000-0000-000000000001',
+        'auth_uid': authUid,
+        'full_name': fullName,
+        'phone_number': phone,
+        'flat_number': flatNumber,
+        'email': email,
+        'membership_status': 'ACTIVE',
+      }).select().single();
+      return MemberModel.fromJson(memberRes);
+    }
+  }
 
   /// Send Phone OTP
   Future<void> sendOtp(String phoneNumber) async {
     if (_supabaseService.isMockDevMode) {
       _devMockPhone = phoneNumber;
       _devMockOtpSent = true;
-      debugPrint('[AuthRepository-Mock] OTP sent to $phoneNumber. Use code 123456');
+      debugPrint('[AuthRepository] Running in local evaluation mode. OTP for $phoneNumber is 123456');
       return;
     }
 
-    await _supabaseService.client.auth.signInWithOtp(
-      phone: phoneNumber,
-    );
+    try {
+      await _supabaseService.client.auth.signInWithOtp(
+        phone: phoneNumber,
+      );
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('sms') || msg.contains('provider') || msg.contains('unsupported') || msg.contains('twilio') || e.statusCode == '400') {
+        throw AuthException(
+          'SMS Provider is not configured in your Supabase project.\n\n'
+          'To receive production OTPs, configure an SMS Provider (Twilio/MessageBird/Textlocal) in Supabase Dashboard -> Authentication -> Providers -> Phone.\n\n'
+          'For test phone numbers without SMS charges, add them under Phone Provider -> Test Phone Numbers in Supabase console.',
+          statusCode: e.statusCode,
+        );
+      }
+      rethrow;
+    }
   }
 
   /// Verify Phone OTP
   Future<void> verifyOtp(String phoneNumber, String token) async {
     if (_supabaseService.isMockDevMode) {
+      if (!_devMockOtpSent) {
+        throw const AuthException('Please request an OTP first.');
+      }
       if (token == '123456') {
         _devMockPhone = phoneNumber;
-        debugPrint('[AuthRepository-Mock] OTP Verified for $phoneNumber');
+        _devMockOtpSent = false;
+        debugPrint('[AuthRepository] OTP Verified for $phoneNumber');
         return;
       } else {
-        throw const AuthException('Invalid 6-digit OTP entered. For Dev Mode, use 123456');
+        throw const AuthException('Invalid 6-digit OTP code entered. In local test mode, use 123456.');
       }
     }
 
@@ -116,35 +188,40 @@ class AuthRepository {
   /// Check Membership Status for authenticated user
   Future<AuthUserState> checkMembershipStatus(String phoneNumber) async {
     if (_supabaseService.isMockDevMode) {
-      // In dev mode:
-      if (phoneNumber.contains('9825000001')) {
+      // Check if this phone belongs to an active member in memory
+      final active = MembersRepository.mockMembers.where((m) => m.phoneNumber == phoneNumber).firstOrNull;
+      if (active != null) {
         return AuthUserState(
           status: AuthStatus.activeMember,
           phoneNumber: phoneNumber,
-          activeMember: _mockActiveMember,
-        );
-      } else if (phoneNumber.contains('9825000004')) {
-        return AuthUserState(
-          status: AuthStatus.pendingApproval,
-          phoneNumber: phoneNumber,
-          pendingRequest: RegistrationRequestModel(
-            requestId: '88888888-8888-8888-8888-888888888001',
-            societyId: '00000000-0000-0000-0000-000000000001',
-            authUid: 'aaaaaaa4-0000-0000-0000-000000000004',
-            fullName: 'Bhavikbhai Joshi',
-            phoneNumber: phoneNumber,
-            flatNumber: 'B-503',
-            requestStatus: 'PENDING',
-            submittedAt: DateTime.now().subtract(const Duration(days: 1)),
-          ),
-        );
-      } else {
-        // Unregistered new phone
-        return AuthUserState(
-          status: AuthStatus.unregistered,
-          phoneNumber: phoneNumber,
+          activeMember: active,
         );
       }
+
+      // Check if there is a pending request
+      final pending = RegistrationRepository.mockRequests.where((r) => r.phoneNumber == phoneNumber).firstOrNull;
+      if (pending != null) {
+        if (pending.isPending) {
+          return AuthUserState(
+            status: AuthStatus.pendingApproval,
+            phoneNumber: phoneNumber,
+            pendingRequest: pending,
+          );
+        } else if (pending.isRejected) {
+          return AuthUserState(
+            status: AuthStatus.rejected,
+            phoneNumber: phoneNumber,
+            pendingRequest: pending,
+            errorMessage: pending.rejectionReason ?? 'Registration request was rejected.',
+          );
+        }
+      }
+
+      // Unregistered new phone
+      return AuthUserState(
+        status: AuthStatus.unregistered,
+        phoneNumber: phoneNumber,
+      );
     }
 
     final authUid = _supabaseService.currentAuthUid;
@@ -256,6 +333,29 @@ class AuthNotifier extends StateNotifier<AuthUserState> {
       await _repo.verifyOtp(state.phoneNumber!, token);
       final checkRes = await _repo.checkMembershipStatus(state.phoneNumber!);
       state = checkRes;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> completeFirstMemberBootstrap({
+    required String fullName,
+    required String flatNumber,
+    String? email,
+  }) async {
+    state = state.copyWith(errorMessage: null);
+    try {
+      final member = await _repo.bootstrapFirstMember(
+        fullName: fullName,
+        flatNumber: flatNumber,
+        email: email,
+      );
+      state = state.copyWith(
+        status: AuthStatus.activeMember,
+        activeMember: member,
+        pendingRequest: null,
+      );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
       rethrow;

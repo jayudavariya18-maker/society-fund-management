@@ -63,17 +63,29 @@ final dashboardDataProvider = FutureProvider<DashboardData>((ref) async {
     }
   }
 
-  final society = SocietyModel(
+  SocietyModel society = SocietyModel(
     societyId: '00000000-0000-0000-0000-000000000001',
-    societyName: 'Bajrang Heights Co-Operative Housing Society',
-    address: 'Plot 42-45, Maruti Nandan Marg, Satellite',
+    societyName: 'Ramdevra Society',
+    address: 'Near Temple, Main Road',
     city: 'Ahmedabad',
     state: 'Gujarat',
     pincode: '380015',
     contactNumber: '+919876543210',
-    email: 'bajrang.heights.society@gmail.com',
+    email: 'ramdevra.society@gmail.com',
     createdAt: DateTime(2025, 1, 1),
   );
+
+  if (!SupabaseService.instance.isMockDevMode) {
+    try {
+      final res = await SupabaseService.instance.client
+          .from('society')
+          .select()
+          .maybeSingle();
+      if (res != null) {
+        society = SocietyModel.fromJson(res);
+      }
+    } catch (_) {}
+  }
 
   return DashboardData(
     society: society,

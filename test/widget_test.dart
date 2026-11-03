@@ -6,10 +6,10 @@ void main() {
   testWidgets('App launches successfully smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: BajrangSocietyApp(),
+        child: RamSevaApp(),
       ),
     );
     await tester.pump();
-    expect(find.byType(BajrangSocietyApp), findsOneWidget);
+    expect(find.byType(RamSevaApp), findsOneWidget);
   });
 }

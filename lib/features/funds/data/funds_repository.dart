@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/fund_model.dart';
-import '../../authentication/data/auth_repository.dart';
 
 final fundsRepositoryProvider = Provider<FundsRepository>((ref) {
   return FundsRepository(SupabaseService.instance, ref);
@@ -18,7 +17,7 @@ class FundsRepository {
 
   FundsRepository(this._supabase, this._ref);
 
-  // In-memory mock funds for dev mode
+  // Clean initial state: General Fund opening balance ₹0, zero demo festivals
   static final List<FundModel> _mockFunds = [
     FundModel(
       fundId: '22222222-2222-2222-2222-222222222001',
@@ -26,45 +25,13 @@ class FundsRepository {
       fundName: 'General Society Maintenance Fund',
       fundType: 'GENERAL',
       description: 'Primary operational fund for society maintenance.',
-      openingBalance: 150000.00,
-      totalContributions: 6000.00,
-      totalExpenses: 8500.00,
-      currentBalance: 147500.00,
-      contributionCount: 2,
-      expenseCount: 1,
-      createdAt: DateTime(2025, 1, 1),
-    ),
-    FundModel(
-      fundId: '22222222-2222-2222-2222-222222222002',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      fundName: 'Navratri Mahotsav 2026 Fund',
-      fundType: 'FESTIVAL',
-      festivalId: '33333333-3333-3333-3333-333333333001',
-      festivalName: 'Navratri Mahotsav 2026',
-      description: 'Dedicated fund for Navratri 2026 celebrations.',
-      openingBalance: 0.00,
-      totalContributions: 10000.00,
-      totalExpenses: 4000.00,
-      currentBalance: 6000.00,
-      contributionCount: 2,
-      expenseCount: 1,
-      createdAt: DateTime(2026, 9, 1),
-    ),
-    FundModel(
-      fundId: '22222222-2222-2222-2222-222222222003',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      fundName: 'Diwali Snehamilan 2026 Fund',
-      fundType: 'FESTIVAL',
-      festivalId: '33333333-3333-3333-3333-333333333002',
-      festivalName: 'Diwali Snehamilan 2026',
-      description: 'Dedicated fund for Diwali community lights and dinner.',
       openingBalance: 0.00,
       totalContributions: 0.00,
       totalExpenses: 0.00,
       currentBalance: 0.00,
       contributionCount: 0,
       expenseCount: 0,
-      createdAt: DateTime(2026, 9, 15),
+      createdAt: DateTime(2025, 1, 1),
     ),
   ];
 
@@ -106,6 +73,8 @@ class FundsRepository {
         createdAt: DateTime.now(),
       );
       _mockFunds.add(newFund);
+      _ref.invalidate(fundsListProvider);
+      _supabase.notifyLocalChange('funds');
       return newFund;
     }
 
@@ -119,6 +88,8 @@ class FundsRepository {
       'is_active': true,
     }).select().single();
 
+    _ref.invalidate(fundsListProvider);
+    _supabase.notifyLocalChange('funds');
     return FundModel.fromJson(res);
   }
 

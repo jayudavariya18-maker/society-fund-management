@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/expense_model.dart';
 import '../../authentication/data/auth_repository.dart';
+import '../../dashboard/data/dashboard_repository.dart';
 import '../../funds/data/funds_repository.dart';
 
 final expensesRepositoryProvider = Provider<ExpensesRepository>((ref) {
@@ -19,44 +20,8 @@ class ExpensesRepository {
 
   ExpensesRepository(this._supabase, this._ref);
 
-  // In-memory mock expenses
-  static final List<ExpenseModel> _mockExpenses = [
-    ExpenseModel(
-      expenseId: '66666666-6666-6666-6666-666666666001',
-      fundId: '22222222-2222-2222-2222-222222222001',
-      fundName: 'General Society Maintenance Fund',
-      eventId: null,
-      amount: 8500.00,
-      expenseCategory: 'ELECTRICITY',
-      description: 'Torrent Power Common meter billing for September 2026',
-      vendorName: 'Torrent Power Ltd',
-      paymentMethod: 'UPI',
-      expenseDate: DateTime(2026, 10, 4),
-      receiptReference: 'BILL-TP-9921',
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdByName: 'Rajeshbhai Patel',
-      createdAt: DateTime(2026, 10, 4, 15, 30),
-      status: 'POSTED',
-    ),
-    ExpenseModel(
-      expenseId: '66666666-6666-6666-6666-666666666002',
-      fundId: '22222222-2222-2222-2222-222222222002',
-      fundName: 'Navratri Mahotsav 2026 Fund',
-      eventId: '44444444-4444-4444-4444-444444444001',
-      eventName: 'Grand Garba Night & Orchestra',
-      amount: 4000.00,
-      expenseCategory: 'SOUND_SYSTEM',
-      description: 'Advance payment for 9-channel sound mixer & speakers for Garba night',
-      vendorName: 'Shiv Sound Services',
-      paymentMethod: 'UPI',
-      expenseDate: DateTime(2026, 10, 8),
-      receiptReference: 'SHIV-ADV-01',
-      createdBy: '11111111-1111-1111-1111-111111111002',
-      createdByName: 'Amitkumar Shah',
-      createdAt: DateTime(2026, 10, 8, 12, 00),
-      status: 'POSTED',
-    ),
-  ];
+  // In-memory mock expenses (Initial: Clean Zero State)
+  static final List<ExpenseModel> _mockExpenses = [];
 
   Future<List<ExpenseModel>> fetchExpenses({
     String? fundId,
@@ -125,6 +90,10 @@ class ExpensesRepository {
 
       _mockExpenses.insert(0, newModel);
       FundsRepository.recordMockExpense(fundId, amount);
+      _ref.invalidate(expensesListProvider(null));
+      _ref.invalidate(fundsListProvider);
+      _ref.invalidate(dashboardDataProvider);
+      _supabase.notifyLocalChange('expenses');
       return newModel;
     }
 
@@ -144,7 +113,12 @@ class ExpensesRepository {
       'correction_reference': correctionReference,
     }).select('*, funds(fund_name), festival_events(event_name)').single();
 
-    return ExpenseModel.fromJson(res);
+    final model = ExpenseModel.fromJson(res);
+    _ref.invalidate(expensesListProvider(null));
+    _ref.invalidate(fundsListProvider);
+    _ref.invalidate(dashboardDataProvider);
+    _supabase.notifyLocalChange('expenses');
+    return model;
   }
 
   /// Create an Auditable Correction or Reversal for an existing Expense

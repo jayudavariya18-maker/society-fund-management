@@ -18,26 +18,8 @@ class AnnouncementsRepository {
 
   AnnouncementsRepository(this._supabase, this._ref);
 
-  static final List<AnnouncementModel> _mockAnnouncements = [
-    AnnouncementModel(
-      announcementId: '77777777-7777-7777-7777-777777777001',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      title: 'General Body Meeting on Sunday 10:00 AM',
-      message: 'Dear Residents, Please gather at the Club House to discuss water storage cleaning and festival schedules.',
-      createdBy: '11111111-1111-1111-1111-111111111001',
-      createdByName: 'Rajeshbhai Patel',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    AnnouncementModel(
-      announcementId: '77777777-7777-7777-7777-777777777002',
-      societyId: '00000000-0000-0000-0000-000000000001',
-      title: 'Navratri Garba Passes Distribution',
-      message: 'Resident ID badges and visitor parking coupons can be collected this evening from the society office.',
-      createdBy: '11111111-1111-1111-1111-111111111002',
-      createdByName: 'Amitkumar Shah',
-      createdAt: DateTime.now().subtract(const Duration(hours: 12)),
-    ),
-  ];
+  // Clean initial state: Zero demo announcements
+  static final List<AnnouncementModel> _mockAnnouncements = [];
 
   Future<List<AnnouncementModel>> fetchAllAnnouncements() async {
     if (_supabase.isMockDevMode) {

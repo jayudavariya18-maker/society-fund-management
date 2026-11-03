@@ -5,7 +5,6 @@ import '../../../app/localization/app_localizations.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/validators.dart';
-import '../../../shared/models/member_model.dart';
 import '../../funds/data/funds_repository.dart';
 import '../../members/data/members_repository.dart';
 import '../data/contributions_repository.dart';

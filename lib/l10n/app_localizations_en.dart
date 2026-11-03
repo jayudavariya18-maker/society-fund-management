@@ -9,10 +9,31 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Bajrang Society';
+  String get appTitle => 'RamSeva';
 
   @override
-  String get tagline => 'Transparent Society Finance & Festival Management';
+  String get societyName => 'Ramdevra Society';
+
+  @override
+  String get tagline =>
+      'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.';
+
+  @override
+  String get dashboardTagline =>
+      'Ram Na Aashirwad, Hanumanji Ni Shakti, Ramdevra Ni Pragati.';
+
+  @override
+  String get noContributionsYet => 'No contributions recorded yet.';
+
+  @override
+  String get noExpensesYet => 'No expenses recorded yet.';
+
+  @override
+  String get noFestivalsYet => 'No festivals added yet.';
+
+  @override
+  String get financialJourneyStarts =>
+      'Your society\'s financial journey starts here.';
 
   @override
   String get home => 'Home';
