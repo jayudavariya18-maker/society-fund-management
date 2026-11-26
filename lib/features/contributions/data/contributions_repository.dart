@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/receipt_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/contribution_model.dart';
@@ -19,16 +20,29 @@ class ContributionsRepository {
   final SupabaseService _supabase;
   final Ref _ref;
 
-  ContributionsRepository(this._supabase, this._ref);
+  ContributionsRepository(this._supabase, this._ref) {
+    _initFromStorage();
+  }
 
   // In-memory mock contributions (Initial: Clean Zero State)
   static final List<ContributionModel> _mockContributions = [];
+
+  static void _initFromStorage() {
+    try {
+      final saved = LocalStorageService.instance.loadContributions();
+      if (saved.isNotEmpty && _mockContributions.isEmpty) {
+        _mockContributions.addAll(saved);
+      }
+    } catch (_) {}
+  }
 
   Future<List<ContributionModel>> fetchContributions({
     String? fundId,
     DateTime? fromDate,
     DateTime? toDate,
   }) async {
+    _initFromStorage();
+
     if (_supabase.isMockDevMode) {
       var list = List<ContributionModel>.from(_mockContributions);
       if (fundId != null) list = list.where((c) => c.fundId == fundId).toList();
@@ -38,16 +52,31 @@ class ContributionsRepository {
       return list;
     }
 
-    var query = _supabase.client
-        .from('contributions')
-        .select('*, funds(fund_name), members(full_name, flat_number)');
+    try {
+      var query = _supabase.client
+          .from('contributions')
+          .select('*, funds(fund_name), members(full_name, flat_number)');
 
-    if (fundId != null) query = query.eq('fund_id', fundId);
-    if (fromDate != null) query = query.gte('payment_date', fromDate.toIso8601String().split('T').first);
-    if (toDate != null) query = query.lte('payment_date', toDate.toIso8601String().split('T').first);
+      if (fundId != null) query = query.eq('fund_id', fundId);
+      if (fromDate != null) query = query.gte('payment_date', fromDate.toIso8601String().split('T').first);
+      if (toDate != null) query = query.lte('payment_date', toDate.toIso8601String().split('T').first);
 
-    final res = await query.order('payment_date', ascending: false);
-    return (res as List).map((e) => ContributionModel.fromJson(e)).toList();
+      final res = await query.order('payment_date', ascending: false);
+      final items = (res as List).map((e) => ContributionModel.fromJson(e)).toList();
+      if (fundId == null && fromDate == null && toDate == null) {
+        await LocalStorageService.instance.saveContributions(items);
+      }
+      return items;
+    } catch (_) {
+      // Local fallback on network failure
+      var list = LocalStorageService.instance.loadContributions();
+      if (list.isEmpty) list = List<ContributionModel>.from(_mockContributions);
+      if (fundId != null) list = list.where((c) => c.fundId == fundId).toList();
+      if (fromDate != null) list = list.where((c) => c.paymentDate.isAfter(fromDate.subtract(const Duration(days: 1)))).toList();
+      if (toDate != null) list = list.where((c) => c.paymentDate.isBefore(toDate.add(const Duration(days: 1)))).toList();
+      list.sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
+      return list;
+    }
   }
 
   Future<ContributionModel> addContribution({
@@ -61,6 +90,7 @@ class ContributionsRepository {
     String? notes,
     String? attachmentUrl,
   }) async {
+    _initFromStorage();
     final activeMember = _ref.read(authStateProvider).activeMember;
     final createdBy = activeMember?.memberId ?? '11111111-1111-1111-1111-111111111001';
     final receiptNo = ReceiptService.generateReceiptNumber();
@@ -84,7 +114,7 @@ class ContributionsRepository {
         contributionId: 'contrib-${DateTime.now().millisecondsSinceEpoch}',
         fundId: fundId,
         memberId: memberId,
-        memberName: memberId != null ? activeMember?.fullName : 'Anonymous Donor',
+        memberName: memberId != null ? activeMember?.fullName : 'Anonymous Resident',
         flatNumber: memberId != null ? activeMember?.flatNumber : null,
         amount: amount,
         contributionType: contributionType,
@@ -101,6 +131,7 @@ class ContributionsRepository {
       );
 
       _mockContributions.insert(0, newModel);
+      await LocalStorageService.instance.saveContributions(_mockContributions);
       FundsRepository.recordMockContribution(fundId, amount);
       _ref.invalidate(contributionsListProvider(null));
       _ref.invalidate(fundsListProvider);
@@ -125,6 +156,10 @@ class ContributionsRepository {
     }).select('*, funds(fund_name), members(full_name, flat_number)').single();
 
     final model = ContributionModel.fromJson(res);
+    final all = LocalStorageService.instance.loadContributions();
+    all.insert(0, model);
+    await LocalStorageService.instance.saveContributions(all);
+
     _ref.invalidate(contributionsListProvider(null));
     _ref.invalidate(fundsListProvider);
     _ref.invalidate(dashboardDataProvider);

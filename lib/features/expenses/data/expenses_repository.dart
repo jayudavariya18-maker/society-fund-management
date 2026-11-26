@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/expense_model.dart';
 import '../../authentication/data/auth_repository.dart';
@@ -18,10 +19,21 @@ class ExpensesRepository {
   final SupabaseService _supabase;
   final Ref _ref;
 
-  ExpensesRepository(this._supabase, this._ref);
+  ExpensesRepository(this._supabase, this._ref) {
+    _initFromStorage();
+  }
 
   // In-memory mock expenses (Initial: Clean Zero State)
   static final List<ExpenseModel> _mockExpenses = [];
+
+  static void _initFromStorage() {
+    try {
+      final saved = LocalStorageService.instance.loadExpenses();
+      if (saved.isNotEmpty && _mockExpenses.isEmpty) {
+        _mockExpenses.addAll(saved);
+      }
+    } catch (_) {}
+  }
 
   Future<List<ExpenseModel>> fetchExpenses({
     String? fundId,
@@ -29,6 +41,8 @@ class ExpensesRepository {
     DateTime? fromDate,
     DateTime? toDate,
   }) async {
+    _initFromStorage();
+
     if (_supabase.isMockDevMode) {
       var list = List<ExpenseModel>.from(_mockExpenses);
       if (fundId != null) list = list.where((e) => e.fundId == fundId).toList();
@@ -39,17 +53,33 @@ class ExpensesRepository {
       return list;
     }
 
-    var query = _supabase.client
-        .from('expenses')
-        .select('*, funds(fund_name), festival_events(event_name)');
+    try {
+      var query = _supabase.client
+          .from('expenses')
+          .select('*, funds(fund_name), festival_events(event_name)');
 
-    if (fundId != null) query = query.eq('fund_id', fundId);
-    if (category != null) query = query.eq('expense_category', category);
-    if (fromDate != null) query = query.gte('expense_date', fromDate.toIso8601String().split('T').first);
-    if (toDate != null) query = query.lte('expense_date', toDate.toIso8601String().split('T').first);
+      if (fundId != null) query = query.eq('fund_id', fundId);
+      if (category != null) query = query.eq('expense_category', category);
+      if (fromDate != null) query = query.gte('expense_date', fromDate.toIso8601String().split('T').first);
+      if (toDate != null) query = query.lte('expense_date', toDate.toIso8601String().split('T').first);
 
-    final res = await query.order('expense_date', ascending: false);
-    return (res as List).map((e) => ExpenseModel.fromJson(e)).toList();
+      final res = await query.order('expense_date', ascending: false);
+      final items = (res as List).map((e) => ExpenseModel.fromJson(e)).toList();
+      if (fundId == null && category == null && fromDate == null && toDate == null) {
+        await LocalStorageService.instance.saveExpenses(items);
+      }
+      return items;
+    } catch (_) {
+      // Local fallback on network failure
+      var list = LocalStorageService.instance.loadExpenses();
+      if (list.isEmpty) list = List<ExpenseModel>.from(_mockExpenses);
+      if (fundId != null) list = list.where((e) => e.fundId == fundId).toList();
+      if (category != null) list = list.where((e) => e.expenseCategory == category).toList();
+      if (fromDate != null) list = list.where((e) => e.expenseDate.isAfter(fromDate.subtract(const Duration(days: 1)))).toList();
+      if (toDate != null) list = list.where((e) => e.expenseDate.isBefore(toDate.add(const Duration(days: 1)))).toList();
+      list.sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+      return list;
+    }
   }
 
   Future<ExpenseModel> addExpense({
@@ -65,6 +95,7 @@ class ExpensesRepository {
     String? receiptReference,
     String? correctionReference,
   }) async {
+    _initFromStorage();
     final activeMember = _ref.read(authStateProvider).activeMember;
     final createdBy = activeMember?.memberId ?? '11111111-1111-1111-1111-111111111001';
 
@@ -89,6 +120,7 @@ class ExpensesRepository {
       );
 
       _mockExpenses.insert(0, newModel);
+      await LocalStorageService.instance.saveExpenses(_mockExpenses);
       FundsRepository.recordMockExpense(fundId, amount);
       _ref.invalidate(expensesListProvider(null));
       _ref.invalidate(fundsListProvider);
@@ -114,6 +146,10 @@ class ExpensesRepository {
     }).select('*, funds(fund_name), festival_events(event_name)').single();
 
     final model = ExpenseModel.fromJson(res);
+    final all = LocalStorageService.instance.loadExpenses();
+    all.insert(0, model);
+    await LocalStorageService.instance.saveExpenses(all);
+
     _ref.invalidate(expensesListProvider(null));
     _ref.invalidate(fundsListProvider);
     _ref.invalidate(dashboardDataProvider);
@@ -127,11 +163,9 @@ class ExpensesRepository {
     required double adjustedAmount,
     required String reason,
   }) async {
-    // 1. Mark original status as ADJUSTED or REVERSED
     final diff = adjustedAmount - originalExpense.amount;
     final correctionDesc = 'Correction for [${originalExpense.expenseId}]: $reason (Delta: ₹${diff.toStringAsFixed(2)})';
 
-    // 2. Add adjustment expense entry linked via correctionReference
     return addExpense(
       fundId: originalExpense.fundId,
       eventId: originalExpense.eventId,

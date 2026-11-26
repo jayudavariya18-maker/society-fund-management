@@ -74,9 +74,16 @@ class FundModel {
       'fund_name': fundName,
       'fund_type': fundType,
       'festival_id': festivalId,
+      'festival_name': festivalName,
       'description': description,
       'opening_balance': openingBalance,
+      'total_contributions': totalContributions,
+      'total_expenses': totalExpenses,
+      'current_balance': currentBalance,
+      'contribution_count': contributionCount,
+      'expense_count': expenseCount,
       'is_active': isActive,
+      'created_at': createdAt.toIso8601String(),
     };
   }
 }

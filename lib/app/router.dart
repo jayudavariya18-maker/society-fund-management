@@ -4,7 +4,7 @@ import '../core/widgets/responsive_scaffold.dart';
 import '../features/announcements/presentation/announcements_screen.dart';
 import '../features/audit_logs/presentation/audit_logs_screen.dart';
 import '../features/authentication/data/auth_repository.dart';
-import '../features/authentication/presentation/phone_auth_screen.dart';
+import '../features/authentication/presentation/login_screen.dart';
 import '../features/contributions/presentation/add_contribution_screen.dart';
 import '../features/contributions/presentation/receipt_preview_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
@@ -31,32 +31,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final isAuthFlow = path == '/login' || path == '/register' || path == '/pending-approval';
 
-      // 1. Unauthenticated or waiting for OTP
-      if (status == AuthStatus.unauthenticated || status == AuthStatus.otpSent) {
-        return path == '/login' ? null : '/login';
+      // 1. Active Member accessing any auth screen -> redirect to dashboard
+      if (status == AuthStatus.activeMember) {
+        if (isAuthFlow) return '/';
+        return null;
       }
 
-      // 2. Unregistered phone (verified OTP, needs to submit flat & name)
-      if (status == AuthStatus.unregistered) {
-        return path == '/register' ? null : '/register';
-      }
-
-      // 3. Pending verification or rejected
+      // 2. Pending verification or rejected
       if (status == AuthStatus.pendingApproval || status == AuthStatus.rejected) {
         return path == '/pending-approval' ? null : '/pending-approval';
       }
 
-      // 4. Active Member accessing login screens -> redirect to dashboard
-      if (status == AuthStatus.activeMember && isAuthFlow) {
-        return '/';
+      // 3. Unauthenticated resident -> allow login or registration, otherwise redirect to login
+      if (path == '/login' || path == '/register') {
+        return null;
       }
 
-      return null;
+      return '/login';
     },
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => const PhoneAuthScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/register',

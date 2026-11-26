@@ -1,7 +1,7 @@
 name: bajrang
 description: "A Complete Multilingual Society Finance & Festival Management Application for Residential Societies"
 publish_to: "none"
-version: 1.0.0+1
+version: 1.2.0+2
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.2.3
   connectivity_plus: ^6.0.3
   uuid: ^4.4.0
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

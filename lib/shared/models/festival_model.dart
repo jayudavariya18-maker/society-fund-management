@@ -64,6 +64,9 @@ class FestivalModel {
       'status': status,
       'cover_image_url': coverImageUrl,
       'created_by': createdBy,
+      'total_contributions': totalContributions,
+      'total_expenses': totalExpenses,
+      'remaining_balance': remainingBalance,
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/festival_event_model.dart';
 import '../../../shared/models/festival_model.dart';
@@ -19,37 +20,72 @@ class FestivalsRepository {
   final SupabaseService _supabase;
   final Ref _ref;
 
-  FestivalsRepository(this._supabase, this._ref);
+  FestivalsRepository(this._supabase, this._ref) {
+    _initFromStorage();
+  }
 
   // Clean initial state: Zero demo festivals and events
   static final List<FestivalModel> _mockFestivals = [];
   static final List<FestivalEventModel> _mockEvents = [];
 
+  static void _initFromStorage() {
+    try {
+      final savedFests = LocalStorageService.instance.loadFestivals();
+      if (savedFests.isNotEmpty && _mockFestivals.isEmpty) {
+        _mockFestivals.addAll(savedFests);
+      }
+      final savedEvents = LocalStorageService.instance.loadFestivalEvents();
+      if (savedEvents.isNotEmpty && _mockEvents.isEmpty) {
+        _mockEvents.addAll(savedEvents);
+      }
+    } catch (_) {}
+  }
+
   Future<List<FestivalModel>> fetchAllFestivals() async {
+    _initFromStorage();
+
     if (_supabase.isMockDevMode) {
       return _mockFestivals;
     }
 
-    final res = await _supabase.client
-        .from('festivals')
-        .select('*, funds(opening_balance, total_contributions, total_expenses, current_balance)')
-        .order('start_date', ascending: true);
+    try {
+      final res = await _supabase.client
+          .from('festivals')
+          .select('*, funds(opening_balance, total_contributions, total_expenses, current_balance)')
+          .order('start_date', ascending: true);
 
-    return (res as List).map((e) => FestivalModel.fromJson(e)).toList();
+      final items = (res as List).map((e) => FestivalModel.fromJson(e)).toList();
+      await LocalStorageService.instance.saveFestivals(items);
+      return items;
+    } catch (_) {
+      final local = LocalStorageService.instance.loadFestivals();
+      if (local.isNotEmpty) return local;
+      return _mockFestivals;
+    }
   }
 
   Future<List<FestivalEventModel>> fetchEventsForFestival(String festivalId) async {
+    _initFromStorage();
+
     if (_supabase.isMockDevMode) {
       return _mockEvents.where((e) => e.festivalId == festivalId).toList();
     }
 
-    final res = await _supabase.client
-        .from('festival_events')
-        .select()
-        .eq('festival_id', festivalId)
-        .order('event_date', ascending: true);
+    try {
+      final res = await _supabase.client
+          .from('festival_events')
+          .select()
+          .eq('festival_id', festivalId)
+          .order('event_date', ascending: true);
 
-    return (res as List).map((e) => FestivalEventModel.fromJson(e)).toList();
+      return (res as List).map((e) => FestivalEventModel.fromJson(e)).toList();
+    } catch (_) {
+      final local = LocalStorageService.instance.loadFestivalEvents();
+      if (local.isNotEmpty) {
+        return local.where((e) => e.festivalId == festivalId).toList();
+      }
+      return _mockEvents.where((e) => e.festivalId == festivalId).toList();
+    }
   }
 
   Future<FestivalModel> createFestival({
@@ -60,6 +96,7 @@ class FestivalsRepository {
     String? coverImageUrl,
     double openingFundBalance = 0.0,
   }) async {
+    _initFromStorage();
     final activeMember = _ref.read(authStateProvider).activeMember;
     final createdBy = activeMember?.memberId ?? '11111111-1111-1111-1111-111111111001';
 
@@ -78,6 +115,7 @@ class FestivalsRepository {
         remainingBalance: openingFundBalance,
       );
       _mockFestivals.add(newFest);
+      await LocalStorageService.instance.saveFestivals(_mockFestivals);
 
       // Create dedicated festival fund
       await _ref.read(fundsRepositoryProvider).createFestivalFund(
@@ -107,6 +145,9 @@ class FestivalsRepository {
     }).select().single();
 
     final festival = FestivalModel.fromJson(festRes);
+    final all = LocalStorageService.instance.loadFestivals();
+    all.add(festival);
+    await LocalStorageService.instance.saveFestivals(all);
 
     // 2. Automatically create the dedicated festival fund
     await _ref.read(fundsRepositoryProvider).createFestivalFund(
@@ -131,6 +172,7 @@ class FestivalsRepository {
     String? eventLocation,
     double estimatedBudget = 0.0,
   }) async {
+    _initFromStorage();
     final activeMember = _ref.read(authStateProvider).activeMember;
     final createdBy = activeMember?.memberId ?? '11111111-1111-1111-1111-111111111001';
 
@@ -147,6 +189,7 @@ class FestivalsRepository {
         createdAt: DateTime.now(),
       );
       _mockEvents.add(newEvent);
+      await LocalStorageService.instance.saveFestivalEvents(_mockEvents);
       _ref.invalidate(festivalsListProvider);
       _supabase.notifyLocalChange('festival_events');
       return newEvent;
@@ -163,6 +206,10 @@ class FestivalsRepository {
     }).select().single();
 
     final event = FestivalEventModel.fromJson(res);
+    final all = LocalStorageService.instance.loadFestivalEvents();
+    all.add(event);
+    await LocalStorageService.instance.saveFestivalEvents(all);
+
     _ref.invalidate(festivalsListProvider);
     _supabase.notifyLocalChange('festival_events');
     return event;

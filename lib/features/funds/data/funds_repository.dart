@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../shared/models/fund_model.dart';
 
@@ -15,7 +16,9 @@ class FundsRepository {
   final SupabaseService _supabase;
   final Ref _ref;
 
-  FundsRepository(this._supabase, this._ref);
+  FundsRepository(this._supabase, this._ref) {
+    _initFromStorage();
+  }
 
   // Clean initial state: General Fund opening balance ₹0, zero demo festivals
   static final List<FundModel> _mockFunds = [
@@ -35,18 +38,39 @@ class FundsRepository {
     ),
   ];
 
+  static void _initFromStorage() {
+    try {
+      final saved = LocalStorageService.instance.loadFunds();
+      if (saved.isNotEmpty) {
+        _mockFunds.clear();
+        _mockFunds.addAll(saved);
+      }
+    } catch (_) {}
+  }
+
   Future<List<FundModel>> fetchAllFunds() async {
+    _initFromStorage();
+
     if (_supabase.isMockDevMode) {
       return _mockFunds;
     }
 
-    final res = await _supabase.client
-        .from('vw_fund_balances')
-        .select()
-        .eq('is_active', true)
-        .order('fund_type', ascending: true);
+    try {
+      final res = await _supabase.client
+          .from('vw_fund_balances')
+          .select()
+          .eq('is_active', true)
+          .order('fund_type', ascending: true);
 
-    return (res as List).map((e) => FundModel.fromJson(e)).toList();
+      final funds = (res as List).map((e) => FundModel.fromJson(e)).toList();
+      await LocalStorageService.instance.saveFunds(funds);
+      return funds;
+    } catch (_) {
+      // Fallback to local storage if offline or connection fails
+      final local = LocalStorageService.instance.loadFunds();
+      if (local.isNotEmpty) return local;
+      return _mockFunds;
+    }
   }
 
   Future<FundModel?> fetchFundById(String fundId) async {
@@ -73,6 +97,7 @@ class FundsRepository {
         createdAt: DateTime.now(),
       );
       _mockFunds.add(newFund);
+      await LocalStorageService.instance.saveFunds(_mockFunds);
       _ref.invalidate(fundsListProvider);
       _supabase.notifyLocalChange('funds');
       return newFund;
@@ -88,13 +113,15 @@ class FundsRepository {
       'is_active': true,
     }).select().single();
 
+    final model = FundModel.fromJson(res);
     _ref.invalidate(fundsListProvider);
     _supabase.notifyLocalChange('funds');
-    return FundModel.fromJson(res);
+    return model;
   }
 
   // Update in-memory balances during mock transactions
   static void recordMockContribution(String fundId, double amount) {
+    _initFromStorage();
     final idx = _mockFunds.indexWhere((f) => f.fundId == fundId);
     if (idx != -1) {
       final f = _mockFunds[idx];
@@ -114,10 +141,12 @@ class FundsRepository {
         expenseCount: f.expenseCount,
         createdAt: f.createdAt,
       );
+      LocalStorageService.instance.saveFunds(_mockFunds);
     }
   }
 
   static void recordMockExpense(String fundId, double amount) {
+    _initFromStorage();
     final idx = _mockFunds.indexWhere((f) => f.fundId == fundId);
     if (idx != -1) {
       final f = _mockFunds[idx];
@@ -137,6 +166,7 @@ class FundsRepository {
         expenseCount: f.expenseCount + 1,
         createdAt: f.createdAt,
       );
+      LocalStorageService.instance.saveFunds(_mockFunds);
     }
   }
 }

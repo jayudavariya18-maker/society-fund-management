@@ -32,6 +32,9 @@ build/
 **/build/
 .gradle/
 **/.gradle/
+.kotlin/
+**/.kotlin/
+hs_err_pid*
 local.properties
 **/local.properties
 *.part

@@ -18,27 +18,27 @@
 Society residents can download and install the official Android release directly onto their smartphones for free:
 
 ### 📥 Direct Release APK Download:
-👉 **[Download RamSeva Release APK (v1.0.0)](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)**  
+👉 **[Download RamSeva Release APK (v1.2.0)](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.2.0/app-release.apk)**  
 *(Alternatively, browse all releases at [GitHub Releases Page](https://github.com/jayudavariya18-maker/society-fund-management/releases))*
 
-- **Direct Download Link**: [https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)
+- **Direct Download Link**: [https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.2.0/app-release.apk](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.2.0/app-release.apk)
 - **Application Name**: `RamSeva`
 - **Society Name**: `Ramdevra Society`
 - **Package ID**: `com.society.bajrang` *(Preserved for installation consistency)*
-- **Version**: `1.0.0` (Build `1`)
+- **Version**: `1.2.0` (Build `2`)
 - **Compatibility**: Android 5.0 (API 21) up to Android 15+ (API 36)
 - **Supported Architectures**: Universal APK (`arm64-v8a`, `armeabi-v7a`, `x86_64`)
 - **Primary Visual Theme**: Sacred Gold (`#D4AF37`), Vibrant Saffron (`#FF6D00`), Deep Navy (`#0F1E36`)
 
 ### 📲 Step-by-Step Android Installation Guide:
-1. Tap the **[Download APK](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.0.0/app-release.apk)** link above using Chrome or any mobile browser.
+1. Tap the **[Download APK](https://github.com/jayudavariya18-maker/society-fund-management/releases/download/v1.2.0/app-release.apk)** link above using Chrome or any mobile browser.
 2. Once the download completes, tap **Open** or locate `app-release.apk` in your phone's **Downloads** folder.
 3. If Android displays a prompt stating *"For your security, your phone is not allowed to install unknown apps from this source"*:
    - Tap **Settings**.
    - Toggle **Allow from this source** to ON.
    - Tap the back button and tap **Install**.
 4. Tap **Open** to launch **RamSeva**.
-5. Select your preferred language (**English**, **ગુજરાતી**, or **हिन्दी**) on the top-right and sign in with your 10-digit mobile number.
+5. Select your preferred language (**English**, **ગુજરાતી**, or **हिन्दी**) on the top-right and sign in with your mobile number and the common society password (`Ramdevra@2026`).
 
 ---
 
@@ -67,11 +67,11 @@ Unlike conventional opaque apps or top-down accounting software, RamSeva impleme
 - **Automatic Gate Lockout**: The instant 1 active member exists, the bootstrap mechanism permanently closes. All subsequent applicants require explicit verification by an existing active neighbor.
 - **Self-Approval Prevention**: An applicant can never approve their own registration; mutual trust across neighbors is enforced at both Flutter and PostgreSQL database trigger levels.
 
-### 3. Native Mobile OTP Authentication
-- Clean +91 Indian mobile number authentication powered by Supabase Auth (`signInWithOtp`, `verifyOTP`).
-- Automatic session caching and persistence across app restarts.
-- Resident approval pipeline: `Unregistered -> Mobile OTP -> Registration Form -> Pending Approval -> Active Resident`.
-- Actionable SMS provider diagnostics when custom gateways (Twilio, MessageBird, Textlocal) need to be provisioned in the Supabase console.
+### 3. Common Society Password & Permanent Local/Cloud Persistence (Zero-OTP)
+- **Elimination of SMS OTPs**: Completely replaced SMS verification with a trusted **Common Society Password** (Default: `Ramdevra@2026`), eliminating carrier delays, SMS costs, and provider misconfigurations.
+- **Single One-Time Registration**: Once a resident registers, their account is activated and permanently saved to disk storage. Reopening the app immediately opens the Dashboard without ever repeating registration or login.
+- **Permanent Dual-Layer Persistence**: All financial records, member profiles, fund ledgers, and transactions are synchronized with central Supabase PostgreSQL and backed by persistent device storage (`LocalStorageService`). Data survives complete process termination, reboots, and offline periods.
+- **Direct Login for Returning Members**: When switching phones or after logging out, residents log in directly with their mobile number and the society password.
 
 ### 4. Double-Entry Inspired Immutable Accounting
 - **Exact Decimal Arithmetic**: Uses PostgreSQL `NUMERIC(12,2)` and precision-safe Dart decimal math, eliminating IEEE 754 floating-point drift.
